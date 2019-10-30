@@ -1,0 +1,20 @@
+spring:
+  profiles:
+    active: dev
+
+server:
+  servlet:
+    context-path: /api
+
+---
+
+spring:
+  profiles: dev
+  datasource:
+    username: root
+    password: 123456
+    url: jdbc:mysql://localhost:3306/test?serverTimezone=UTC
+    driver-class-name: com.mysql.jdbc.Driver
+
+server:
+  port: 8080
