@@ -1,8 +1,29 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.jt.openquestion.mapper.OpenQuestionMapper">
+        <resultMap id="openQuestion" type="com.jt.openquestion.entity.OpenQuestion">
+                <id property="openQuestionId" column="OpenQuestionId" />
+                <association property="openQuestionExtension" resultMap="openQuestionExtension" columnPrefix="x_" />
+                <collection property="openQuestionLabels" ofType="com.jt.openquestion.entity.OpenQuestionLabel"
+                            resultMap="openQuestionLabel" columnPrefix="l_" />
+        </resultMap>
 
-    <select id="getByOpenQuestionIds" resultType="com.jt.openquestion.entity.OpenQuestion">
+        <resultMap id="openQuestionLabel" type="com.jt.openquestion.entity.OpenQuestionLabel">
+                <id property="openQuestionId" column="OpenQuestionId" />
+                <id property="labelId" column="LabelId" />
+                <id property="labelType" column="LabelType" />
+                <result property="labelScore" column="LabelScore" />
+        </resultMap>
+
+        <resultMap id="openQuestionExtension" type="com.jt.openquestion.entity.OpenQuestionExtension">
+                <id property="openQuestionId" column="OpenQuestionId"/>
+                <result property="originalQuestionTypeId" column="OriginalQuestionTypeId"/>
+                <result property="questionAnalysis" column="QuestionAnalysis"/>
+                <result property="questionAnswer" column="QuestionAnswer"/>
+                <result property="questionTypeId" column="QuestionTypeId"/>
+        </resultMap>
+
+        <select id="getByOpenQuestionIds" resultMap="openQuestion">
             SELECT
             op.`OpenQuestionId`,
             op.`SourceQuestionId`,
@@ -24,9 +45,28 @@
             op.`LabelUseType`,
             opr.`ReferenceCount`,
             opr.`AnswerCount`,
-            opr.`AnswerCorrectRate`
+            opr.`AnswerCorrectRate`,
+            ol.OpenQuestionId as l_OpenQuestionId,
+            ol.LabelId as l_LabelId,
+            ol.LabelType as l_LabelType,
+            ol.LabelScore as l_LabelScore,
+            x.OpenQuestionId as x_OpenQuestionId,
+            x.originalQuestionTypeId as x_OriginalQuestionTypeId,
+            x.questionAnalysis as x_QuestionAnalysis,
+            x.questionAnswer as x_QuestionAnswer,
+            x.questionTypeId as x_QuestionTypeId
         FROM `Openquestion` AS op
         LEFT JOIN `openquestionreference` AS opr ON op.OpenQuestionId = opr.OpenQuestionId
-        WHERE op.OpenQuestionId in (#{ids});
+        LEFT JOIN  `OpenQuestionLabel` AS ol on op.OpenQuestionId = ol.OpenQuestionId
+        LEFT JOIN  `OpenQuestionExtension` as x on op.OpenQuestionId = x.OpenQuestionId
+        WHERE op.OpenQuestionId in 
+        <foreach collection="array" item="id" index="index" open="(" close=")" separator=",">
+                ${id}
+        </foreach>
     </select>
+
+        <insert id="saveOpenQuestion" useGeneratedKeys="true" keyProperty="openQuestionId">
+                INSERT INTO OpenQuestion(SourceQuestionId, SourcePlatform,QuestionContent,OriginalQuestionLevel,CourseId,OriginalKnowledgePointLabels,QuestionSource,OriginalUseRange,UseRange,QuestionOnlineTime,Credibility,LabelUseType )
+                VALUES (#{sourceQuestionId},#{sourcePlatform},#{questionContent},#{originalQuestionLevel},#{courseId},#{originalKnowledgePointLabels},#{questionSource},#{originalUseRange},#{useRange},#{questionOnlineTime},#{credibility},#{labelUseType})
+        </insert>
 </mapper>

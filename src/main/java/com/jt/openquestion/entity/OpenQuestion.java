@@ -1,5 +1,7 @@
 package com.jt.openquestion.entity;
 
+import com.jt.openquestion.enums.TikuPlatformEnum;
+
 import java.util.Date;
 import java.util.List;
 
@@ -26,6 +28,24 @@ public class OpenQuestion {
     private Date createdOn;
     private Date modifiedOn;
     private List<OpenQuestionLabel> openQuestionLabels;
+    private OpenQuestionExtension openQuestionExtension;
+    private Integer labelUseType;
+
+    public Integer getLabelUseType() {
+        return labelUseType;
+    }
+
+    public void setLabelUseType(Integer labelUseType) {
+        this.labelUseType = labelUseType;
+    }
+
+    public OpenQuestionExtension getOpenQuestionExtension() {
+        return openQuestionExtension;
+    }
+
+    public void setOpenQuestionExtension(OpenQuestionExtension openQuestionExtension) {
+        this.openQuestionExtension = openQuestionExtension;
+    }
 
     public List<OpenQuestionLabel> getOpenQuestionLabels() {
         return openQuestionLabels;
@@ -153,5 +173,25 @@ public class OpenQuestion {
 
     public void setModifiedOn(Date modifiedOn) {
         this.modifiedOn = modifiedOn;
+    }
+
+    public int getCalculateQuestionLevel()
+    {
+        TikuPlatformEnum platformEnum = TikuPlatformEnum.getTikuPlatform(this.sourcePlatform);
+            switch (platformEnum)
+            {
+                case Motk:
+                case MotkTest:
+                case MotkUat:
+                case XueKe:
+                case WeiLaiNao:
+                    return Math.max((int)Math.ceil(this.originalQuestionLevel - 0.2), 1);
+                case Jyeoo:
+                    return Math.max((int)Math.ceil((1 - this.originalQuestionLevel) * 5 - 0.2), 1);
+                case TiKu:
+                    return Math.max((int)Math.ceil(this.originalQuestionLevel * 5 - 0.2), 1);
+                default:
+                    return Math.max((int)Math.ceil(this.originalQuestionLevel - 0.2), 1);
+            }
     }
 }

@@ -2,9 +2,9 @@ package com.jt.openquestion.entity;
 
 public class OpenQuestionLabel {
     private Long openQuestionId;
-    private Integer LabelId;
-    private Integer LabelType;
-    private Double LabelScore;
+    private Integer labelId;
+    private Integer labelType;
+    private Double labelScore;
 
     public Long getOpenQuestionId() {
         return openQuestionId;
@@ -15,26 +15,26 @@ public class OpenQuestionLabel {
     }
 
     public Integer getLabelId() {
-        return LabelId;
+        return labelId;
     }
 
     public void setLabelId(Integer labelId) {
-        LabelId = labelId;
+        this.labelId = labelId;
     }
 
     public Integer getLabelType() {
-        return LabelType;
+        return labelType;
     }
 
     public void setLabelType(Integer labelType) {
-        LabelType = labelType;
+        this.labelType = labelType;
     }
 
     public Double getLabelScore() {
-        return LabelScore;
+        return labelScore;
     }
 
     public void setLabelScore(Double labelScore) {
-        LabelScore = labelScore;
+        this.labelScore = labelScore;
     }
 }

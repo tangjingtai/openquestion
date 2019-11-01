@@ -7,5 +7,7 @@ import java.util.List;
 
 @Repository
 public interface OpenQuestionMapper {
+    void saveOpenQuestion(OpenQuestion openQuestion);
+
     List<OpenQuestion> getByOpenQuestionIds(long[] ids);
 }
