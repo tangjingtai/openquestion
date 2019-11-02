@@ -3,17 +3,12 @@ package com.jt.openquestion.algorithm;
 import com.jt.openquestion.entity.*;
 import com.jt.openquestion.enums.OpenQuestionLabelTypeEnum;
 import com.jt.openquestion.enums.TikuPlatformEnum;
-
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
-
 import com.jt.openquestion.utils.CastArrayUtil;
 import com.jt.openquestion.utils.CollectionExtension;
 import com.jt.openquestion.utils.StringExtensions;
 import com.jt.openquestion.utils.Tuple;
-
-import static java.lang.System.in;
 
 public class OpenQuestionLabelCredibilityAlgorithm {
 
@@ -59,15 +54,15 @@ public class OpenQuestionLabelCredibilityAlgorithm {
         List<SimilarQuestion> calculateQuestions = getCalculateQuestions(openQuestion, duplicateQuestions);
 
         Tuple.Tuple2<List<OpenQuestionLabel>, Double> knowledgeScore = calculateKnowledgeCredibility(calculateQuestions, topKnowledges);
-//        var questionLevelScore = CalculateQuestionLevelCredibility(calculateQuestions, topQuestionLevels);
-//        var finalCredibilityScore = Sigmoid(knowledgeScore.Item2 * 0.8 + questionLevelScore.Item2 * 0.2);
-//
-//        var openQuestionLabels = new List<OpenQuestionLabel>();
-//        openQuestionLabels.AddRange(knowledgeScore.Item1);
-//        openQuestionLabels.AddRange(questionLevelScore.Item1);
-//
-//        openQuestion.OpenQuestionLabels = openQuestionLabels;
-//        openQuestion.Credibility = finalCredibilityScore;
+        Tuple.Tuple2<List<OpenQuestionLabel>, Double> questionLevelScore = calculateQuestionLevelCredibility(calculateQuestions, topQuestionLevels);
+        double finalCredibilityScore = sigmoid(knowledgeScore.getItem2() * 0.8 + questionLevelScore.getItem2() * 0.2);
+
+        ArrayList<OpenQuestionLabel> openQuestionLabels = new ArrayList<>();
+        openQuestionLabels.addAll(knowledgeScore.getItem1());
+        openQuestionLabels.addAll(questionLevelScore.getItem1());
+
+        openQuestion.setOpenQuestionLabels(openQuestionLabels);
+        openQuestion.setCredibility(finalCredibilityScore);
 
         return openQuestion;
     }
@@ -90,20 +85,20 @@ public class OpenQuestionLabelCredibilityAlgorithm {
         });
 
         List<Integer> distinctKnowledgeIds = knowledgeIds.stream().distinct().collect(Collectors.toList());
-        List<Tuple.Tuple2<Integer,Double>> knowledgeScores = new ArrayList<>();
+        List<Tuple.Tuple2<Integer, Double>> knowledgeScores = new ArrayList<>();
         for (Integer knowledgeId : distinctKnowledgeIds) {
             ArrayList<CalculateCredibilityEntity> tempQuestions = new ArrayList<>();
             for (SimilarQuestion duplicateQuestion : duplicateQuestions) {
-                for(int id : duplicateQuestion.getCalculateKnowledgePointLabels()){
-                    if(id == knowledgeId){
-                        tempQuestions.add(new CalculateCredibilityEntity(duplicateQuestion.getSourcePlatform(),duplicateQuestion.getPlatformWeight(),duplicateQuestion.getSimilarScore()));
+                for (int id : duplicateQuestion.getCalculateKnowledgePointLabels()) {
+                    if (id == knowledgeId) {
+                        tempQuestions.add(new CalculateCredibilityEntity(duplicateQuestion.getSourcePlatform(), duplicateQuestion.getPlatformWeight(), duplicateQuestion.getSimilarScore()));
                         break;
                     }
                 }
-                for(int id : duplicateQuestion.getCalculateSecondaryKnowledgePointLabels()){
-                    if(id == knowledgeId){
+                for (int id : duplicateQuestion.getCalculateSecondaryKnowledgePointLabels()) {
+                    if (id == knowledgeId) {
                         tempQuestions.add(new CalculateCredibilityEntity(duplicateQuestion.getSourcePlatform(),
-                                duplicateQuestion.getPlatformWeight() * SECONDARY_KNOWLEDGEPOINT_WEIGHT_FACTOR,duplicateQuestion.getSimilarScore()));
+                                duplicateQuestion.getPlatformWeight() * SECONDARY_KNOWLEDGEPOINT_WEIGHT_FACTOR, duplicateQuestion.getSimilarScore()));
                         break;
                     }
                 }
@@ -113,43 +108,68 @@ public class OpenQuestionLabelCredibilityAlgorithm {
         }
 
         knowledgeScores = removeParentKnowledgePointScore(knowledgeScores);
-        knowledgeScores.sort((x,y)->Double.compare(y.getItem2(),x.getItem2()));
+        knowledgeScores.sort((x, y) -> Double.compare(y.getItem2(), x.getItem2()));
         List<OpenQuestionLabel> finalKnowledges = knowledgeScores.subList(0, Math.min(knowledgeScores.size(), topKnowledges)).stream()
                 .map(x -> new OpenQuestionLabel(0L, x.getItem1(), OpenQuestionLabelTypeEnum.KnowledgePoint.getValue(), x.getItem2()))
                 .collect(Collectors.toList());
-        double finalScore = knowledgeScores.size() > 0 ? CollectionExtension.max(knowledgeScores,x->x.getItem2())  :0.0;
+        double finalScore = knowledgeScores.size() > 0 ? CollectionExtension.max(knowledgeScores, Tuple.Tuple2::getItem2) : 0.0;
 
         return new Tuple.Tuple2<>(finalKnowledges, finalScore);
+    }
+
+    /**
+     * 计算各个平台重复题目中所有题目难度可信度得分，并返回得分最高的题目难度以及题目难度的综合得分
+     *
+     * @param duplicateQuestions 重复题目集合
+     * @param topQuestionLevels  返回得分最高的几个题目难度
+     * @return 得分最高的题目难度等级：题目难度的综合得分
+     */
+    private Tuple.Tuple2<List<OpenQuestionLabel>, Double> calculateQuestionLevelCredibility(List<SimilarQuestion> duplicateQuestions,
+                                                                                            int topQuestionLevels) {
+        List<Integer> distinctQuestionLevels = duplicateQuestions.stream().map(SimilarQuestion::getCalculateQuestionLevel).distinct().collect(Collectors.toList());
+        ArrayList<Tuple.Tuple2<Integer, Double>> questionLevelScores = new ArrayList<>();
+        for (int level : distinctQuestionLevels) {
+            List<CalculateCredibilityEntity> tempQuestions = duplicateQuestions.stream().filter(x -> x.getCalculateQuestionLevel() == level)
+                    .map(x -> new CalculateCredibilityEntity(x.getSourcePlatform(), x.getPlatformWeight(), x.getSimilarScore()))
+                    .collect(Collectors.toList());
+            double score = calculateLabelCredibility(tempQuestions);
+            questionLevelScores.add(new Tuple.Tuple2<>(level, score));
+        }
+        List<OpenQuestionLabel> finalQuestionLevels = questionLevelScores
+                .stream().sorted((x, y) -> Double.compare(y.getItem2(), x.getItem2()))
+                .map(x -> new OpenQuestionLabel(0L, x.getItem1(), OpenQuestionLabelTypeEnum.QuestionLevel.getValue(), x.getItem2()))
+                .collect(Collectors.toList())
+                .subList(0, Math.min(questionLevelScores.size(), topQuestionLevels));
+        double finalScore = questionLevelScores.size() > 0 ? CollectionExtension.max(questionLevelScores, Tuple.Tuple2::getItem2) : 0.0;
+
+        return new Tuple.Tuple2<List<OpenQuestionLabel>, Double>(finalQuestionLevels, finalScore);
     }
 
     /**
      * 剔除知识点集合中存在父子关系的父知识点，将父知识点的得分传递到子知识点得分<br />
      * 存在父子关系（包括父知识点的父知识点）的知识点计算如下：
      * <p>
-     *   1. 从父知识点开始向子知识点计算得分，公式：score = Math.Max(parentScore, score) + Math.Min(parentScore, score) * 0.1;
+     * 1. 从父知识点开始向子知识点计算得分，公式：score = Math.Max(parentScore, score) + Math.Min(parentScore, score) * 0.1;
      * 2. 从结果中排除存在父子关系的父知识点（既同时存在父、子知识点得分时，保留子知识点的得分）
      * </p>
+     *
      * @param knowledgeScores 知识点标签集合
      * @return 排除了父知识点后的标签集合
      */
-    private List<Tuple.Tuple2<Integer, Double>> removeParentKnowledgePointScore(List<Tuple.Tuple2<Integer, Double>> knowledgeScores)
-    {
-        List<Integer> knowledgeIds = knowledgeScores.stream().map(x -> x.getItem1()).collect(Collectors.toList());
+    private List<Tuple.Tuple2<Integer, Double>> removeParentKnowledgePointScore(List<Tuple.Tuple2<Integer, Double>> knowledgeScores) {
+        List<Integer> knowledgeIds = knowledgeScores.stream().map(Tuple.Tuple2::getItem1).collect(Collectors.toList());
         ArrayList<Tuple.Tuple2<Integer, Double>> result = new ArrayList<>();
         ArrayList<Integer> parentKnowledges = new ArrayList<>();
-        for (Tuple.Tuple2<Integer, Double> knowledgeScore : knowledgeScores)
-        {
+        for (Tuple.Tuple2<Integer, Double> knowledgeScore : knowledgeScores) {
             List<Integer> parentKnowledgeIdChain = getKnowledgePointParentChain(knowledgeScore.getItem1());
             List<Integer> intersectKnowledges = new ArrayList<>(knowledgeIds.size());
             Collections.copy(intersectKnowledges, knowledgeIds);
             intersectKnowledges.retainAll(parentKnowledgeIdChain);
             double score = knowledgeScore.getItem2();
-            if (intersectKnowledges.size() > 0)
-            {
+            if (intersectKnowledges.size() > 0) {
                 score = 0.0;
                 parentKnowledges.addAll(intersectKnowledges);
-                for (int i = intersectKnowledges.size() - 1; i >= 0; i--)
-                {
+                for (int i = intersectKnowledges.size() - 1; i >= 0; i--) {
                     final int index = i;
                     Optional<Tuple.Tuple2<Integer, Double>> parentKnowledgeScore = CollectionExtension.firstOrDefault(knowledgeScores, x -> x.getItem1() == intersectKnowledges.get(index));
                     score = Math.max(score, parentKnowledgeScore.get().getItem2()) + Math.min(score, parentKnowledgeScore.get().getItem2()) * 0.1;
@@ -158,40 +178,35 @@ public class OpenQuestionLabelCredibilityAlgorithm {
             }
             result.add(new Tuple.Tuple2<Integer, Double>(knowledgeScore.getItem1(), score));
         }
-        return result.stream().filter(x-> !parentKnowledges.contains(x.getItem1())).collect(Collectors.toList());
+        return result.stream().filter(x -> !parentKnowledges.contains(x.getItem1())).collect(Collectors.toList());
     }
 
     /**
      * 获取知识点的父知识点链，返回[父知识点Id, 父知识点的父知识点Id, .....]
+     *
      * @param knowledgeId 当前知识点
      * @return 父知识点、父知识点的父知识点....组成的集合
      */
-    private List<Integer> getKnowledgePointParentChain(int knowledgeId)
-    {
+    private List<Integer> getKnowledgePointParentChain(int knowledgeId) {
         ArrayList<Integer> result = new ArrayList<>();
-        if (motkKnowledgePoints == null)
-        {
+        if (motkKnowledgePoints == null) {
             // TODO: 从数据库中查询魔题库知识点列表
 //            motkKnowledgePoints = _knowledgePointDal.GetMotkKnowledgePoints();
             motkKnowledgePoints = new ArrayList<>();
         }
         Optional<KnowledgePoint> knowledge = CollectionExtension.firstOrDefault(motkKnowledgePoints, x -> x.getKnowledgePointId() == knowledgeId);
-        if (!knowledge.isPresent() || knowledge.get().getParentKnowledgePointId() == 0)
-        {
+        if (!knowledge.isPresent() || knowledge.get().getParentKnowledgePointId() == 0) {
             return new ArrayList<>();
         }
         int parentKnowledgeId = knowledge.get().getParentKnowledgePointId();
-        while (true)
-        {
+        while (true) {
             final int pId = parentKnowledgeId;
             result.add(parentKnowledgeId);
-            Optional<KnowledgePoint>  parentKnowledge =  CollectionExtension.firstOrDefault(motkKnowledgePoints, x -> x.getKnowledgePointId() == pId);
-            if (!parentKnowledge.isPresent() || parentKnowledge.get().getParentKnowledgePointId() == 0)
-            {
+            Optional<KnowledgePoint> parentKnowledge = CollectionExtension.firstOrDefault(motkKnowledgePoints, x -> x.getKnowledgePointId() == pId);
+            if (!parentKnowledge.isPresent() || parentKnowledge.get().getParentKnowledgePointId() == 0) {
                 break;
             }
-            if (result.contains(parentKnowledge.get().getParentKnowledgePointId()))
-            {
+            if (result.contains(parentKnowledge.get().getParentKnowledgePointId())) {
                 break;
             }
             parentKnowledgeId = parentKnowledge.get().getParentKnowledgePointId();
@@ -201,25 +216,23 @@ public class OpenQuestionLabelCredibilityAlgorithm {
 
     /**
      * 计算重复题目指定一个标签的可信度得分
+     *
      * @param sameLabelQuestions 包含同一标签的重复题目
      * @return 指定一个表情的可信度得分
      */
-    public double calculateLabelCredibility(List<CalculateCredibilityEntity> sameLabelQuestions)
-    {
+    public double calculateLabelCredibility(List<CalculateCredibilityEntity> sameLabelQuestions) {
         int questionCount = sameLabelQuestions.size();
-        long platforms = sameLabelQuestions.stream().map(x->x.getSourcePlatform()).distinct().count();
+        long platforms = sameLabelQuestions.stream().map(CalculateCredibilityEntity::getSourcePlatform).distinct().count();
 
         double wMin = CollectionExtension.min(sameLabelQuestions, CalculateCredibilityEntity::getPlatformWeight);
-        double sAvg = CollectionExtension.avg(sameLabelQuestions,CalculateCredibilityEntity::getSimilarScore);
+        double sAvg = CollectionExtension.avg(sameLabelQuestions, CalculateCredibilityEntity::getSimilarScore);
         double sMin = CollectionExtension.min(sameLabelQuestions, CalculateCredibilityEntity::getSimilarScore);
 
-        if (platforms == 1)
-        {
+        if (platforms == 1) {
             wMin = 0.5;
         }
         double score = 0;
-        for (CalculateCredibilityEntity t : sameLabelQuestions)
-        {
+        for (CalculateCredibilityEntity t : sameLabelQuestions) {
             score += sigmoid(2 * t.getPlatformWeight() - wMin) * sigmoid((2 * t.getSimilarScore() - sAvg) / sAvg);
         }
         score = platforms * score / Math.pow(questionCount, 0.75);
@@ -228,11 +241,11 @@ public class OpenQuestionLabelCredibilityAlgorithm {
 
     /**
      * sigmoid数学函数
+     *
      * @param v 输入
-     * @return函数值
+     * @return 函数值
      */
-    private double sigmoid(double v)
-    {
+    private double sigmoid(double v) {
         return 1 / (1 + Math.exp(-1 * v));
     }
 
@@ -276,7 +289,7 @@ public class OpenQuestionLabelCredibilityAlgorithm {
         similarQuestion.setOpenQuestionId(openQuestion.getOpenQuestionId());
         similarQuestion.setSourceQuestionId(openQuestion.getSourceQuestionId());
         similarQuestion.setSourcePlatform(openQuestion.getSourcePlatform());
-        similarQuestion.setPlatformWeight(GetPlatformCourseWeight(openQuestion.getSourcePlatform(), openQuestion.getCourseId()));
+        similarQuestion.setPlatformWeight(getPlatformCourseWeight(openQuestion.getSourcePlatform(), openQuestion.getCourseId()));
         similarQuestion.setSimilarScore(similar);
         similarQuestion.setCalculateKnowledgePointLabels(getMotkKnowledgePoints(openQuestion.getOriginalKnowledgePointLabels(),
                 openQuestion.getSourcePlatform(), openQuestion.getCourseId()));
@@ -288,7 +301,7 @@ public class OpenQuestionLabelCredibilityAlgorithm {
     /**
      * 获取第三方题库平台的知识点Id对应的motk知识点Id
      *
-     * @param thirdPartKnowledgePointIds 第三方题库平台的知识点Id集合
+     * @param thirdPartKnowledgePointIds 第三方题库平台的知识点Id集合，多个使用英文逗号分隔
      * @param sourcePlatform             来源平台
      * @param courseId                   学科Id
      * @return 第三方题库平台的知识点对应的motk知识点Id集合
@@ -300,11 +313,11 @@ public class OpenQuestionLabelCredibilityAlgorithm {
         }
         String[] knowledgePointIds = thirdPartKnowledgePointIds.split(",");
         if (!sourcePlatformKnowledgePointRelations.containsKey(sourcePlatform)) {
-            synchronized (this.lock) {
+            synchronized (lock) {
                 if (!sourcePlatformKnowledgePointRelations.containsKey(sourcePlatform)) {
                     // var knowledgePoints = _knowledgePointDal.GetThirdPartyKnowledgePointByPlatform(sourcePlatform);
                     ArrayList<ThirdPartyKnowledgePoint> knowledgePoints = null;
-                    // TODO: 读取第三方知识点
+                    // TODO: 从数据库中读取第三方知识点
                     if (knowledgePoints != null) {
                         knowledgePoints.sort(Comparator.comparingInt(ThirdPartyKnowledgePoint::getStatusFlag));
                         HashMap<ThirdPartyKnowledgePointIdTuple, Integer> map = new HashMap<>(knowledgePoints.size());
@@ -365,23 +378,17 @@ public class OpenQuestionLabelCredibilityAlgorithm {
         tikuPlatformWeightConfig.setCoursePlatformWeights(map);
     }
 
-    public double GetPlatformCourseWeight(int platform, int courseId) {
+    public double getPlatformCourseWeight(int platform, int courseId) {
         if (platformLabelWeightConfig == null) {
             buildSourcePlatformLabelWeight();
         }
-        TikuPlatformWeightConfig config = null;
-        for (TikuPlatformWeightConfig item : platformLabelWeightConfig) {
-            if (config.getPlatform().getValue().equals(platform)) {
-                config = item;
-                break;
-            }
-        }
-        if (config == null || config.getPlatformWeight() <= 0.0) {
+        Optional<TikuPlatformWeightConfig> config = CollectionExtension.firstOrDefault(platformLabelWeightConfig, x->x.getPlatform().getValue().equals(platform));
+        if (!config.isPresent() || config.get().getPlatformWeight() <= 0.0) {
             return PLATFORM_BASE_WEIGHT;
         }
-        if (config.getCoursePlatformWeights() != null && config.getCoursePlatformWeights().containsKey(courseId)) {
-            return config.getCoursePlatformWeights().get(courseId);
+        if (config.get().getCoursePlatformWeights() != null && config.get().getCoursePlatformWeights().containsKey(courseId)) {
+            return config.get().getCoursePlatformWeights().get(courseId);
         }
-        return config.getPlatformWeight();
+        return config.get().getPlatformWeight();
     }
 }
