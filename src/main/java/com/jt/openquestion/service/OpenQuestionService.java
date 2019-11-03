@@ -18,6 +18,14 @@ public class OpenQuestionService {
         return openQuestion.getOpenQuestionId();
     }
 
+    public OpenQuestion getByOpenQuestionId(long id){
+        List<OpenQuestion> openQuestions = getByOpenQuestionIds(new long[]{id});
+        if(openQuestions == null || openQuestions.size() == 0){
+            return null;
+        }
+        return openQuestions.get(0);
+    }
+
     public List<OpenQuestion> getByOpenQuestionIds(long[] ids){
         return mapper.getByOpenQuestionIds(ids);
     }

@@ -5,6 +5,10 @@ spring:
 server:
   servlet:
     context-path: /api
+mybatis:
+  mapper-locations: classpath:mapping/*Mapper.xml
+  type-aliases-package: com.jt.entity
+  config-location: classpath:mybatis-config.xml
 
 ---
 
@@ -17,4 +21,11 @@ spring:
     driver-class-name: com.mysql.jdbc.Driver
 
 server:
-  port: 8080
+  port: 8090
+
+# Show sql log
+logging:
+  level:
+     com:
+       jt:
+         mapper: debug
