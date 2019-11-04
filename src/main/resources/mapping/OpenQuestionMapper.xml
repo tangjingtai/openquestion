@@ -3,6 +3,21 @@
 <mapper namespace="com.jt.openquestion.mapper.OpenQuestionMapper">
         <resultMap id="openQuestion" type="com.jt.openquestion.entity.OpenQuestion">
                 <id property="openQuestionId" column="OpenQuestionId" />
+                <!--<result property="questionContent" column="QuestionContent" jdbcType="VARCHAR" javaType="java.lang.String" typeHandler="org.apache.ibatis.type.StringTypeHandler"/>-->
+                <result property="sourceQuestionId" column="SourceQuestionId"/>
+            <result property="sourcePlatform" column="SourcePlatform"/>
+            <result property="originalQuestionLevel" column="originalQuestionLevel"/>
+            <result property="questionLevel" column="questionLevel"/>
+            <result property="courseId" column="courseId"/>
+            <result property="originalKnowledgePointLabels" column="originalKnowledgePointLabels"/>
+            <result property="knowledgePointLabels" column="knowledgePointLabels"/>
+            <result property="questionSource" column="questionSource"/>
+            <result property="useRange" column="useRange"/>
+            <result property="questionOnlineTime" column="questionOnlineTime"/>
+            <result property="credibility" column="credibility"/>
+            <result property="createdOn" column="createdOn"/>
+            <result property="modifiedOn" column="modifiedOn"/>
+            <result property="labelUseType" column="labelUseType"/>
                 <association property="openQuestionExtension" resultMap="openQuestionExtension" columnPrefix="x_" />
                 <collection property="openQuestionLabels" ofType="com.jt.openquestion.entity.OpenQuestionLabel"
                             resultMap="openQuestionLabel" columnPrefix="l_" />
@@ -28,7 +43,7 @@
             op.`OpenQuestionId`,
             op.`SourceQuestionId`,
             op.`SourcePlatform`,
-            op.`QuestionContent`,
+            op.QuestionContent,
             op.`OriginalQuestionLevel`,
             op.`CourseId`,
             op.`OriginalKnowledgePointLabels`,

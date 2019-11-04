@@ -294,7 +294,7 @@ public class OpenQuestionLabelCredibilityAlgorithm {
         similarQuestion.setCalculateKnowledgePointLabels(getMotkKnowledgePoints(openQuestion.getOriginalKnowledgePointLabels(),
                 openQuestion.getSourcePlatform(), openQuestion.getCourseId()));
 //        similarQuestion.setCalculateSecondaryKnowledgePointLabels(getMotkKnowledgePoints(openQuestion.OriginalSecondaryKnowledgePointLabels, openQuestion.SourcePlatform, openQuestion.CourseId),
-        similarQuestion.setCalculateQuestionLevel(openQuestion.getCalculateQuestionLevel());
+        similarQuestion.setCalculateQuestionLevel(openQuestion.fetchCalculateQuestionLevel());
         return similarQuestion;
     }
 

@@ -12,9 +12,8 @@ public class OpenQuestion {
     private Long openQuestionId;
     private String sourceQuestionId;
     private Integer sourcePlatform;
-    private  String questionContent;
+    private String questionContent;
     private Double originalQuestionLevel;
-    private Double questionLevel;
     private Integer courseId;
     private String originalKnowledgePointLabels;
     /**
@@ -95,14 +94,6 @@ public class OpenQuestion {
         this.originalQuestionLevel = originalQuestionLevel;
     }
 
-    public Double getQuestionLevel() {
-        return questionLevel;
-    }
-
-    public void setQuestionLevel(Double questionLevel) {
-        this.questionLevel = questionLevel;
-    }
-
     public Integer getCourseId() {
         return courseId;
     }
@@ -175,7 +166,7 @@ public class OpenQuestion {
         this.modifiedOn = modifiedOn;
     }
 
-    public int getCalculateQuestionLevel()
+    public int fetchCalculateQuestionLevel()
     {
         TikuPlatformEnum platformEnum = TikuPlatformEnum.getTikuPlatform(this.sourcePlatform);
             switch (platformEnum)
