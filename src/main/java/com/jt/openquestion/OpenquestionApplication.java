@@ -6,7 +6,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
 
 @ComponentScan("com.jt")
-@MapperScan("com.jt.openquestion.mapper")
+@MapperScan(value = {"com.jt.openquestion.mapper","com.lmash.mysqltest.generator.mapper"})
 @SpringBootApplication
 public class OpenquestionApplication {
 

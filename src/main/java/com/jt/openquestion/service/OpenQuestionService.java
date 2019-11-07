@@ -2,6 +2,8 @@ package com.jt.openquestion.service;
 
 import com.jt.openquestion.entity.OpenQuestion;
 import com.jt.openquestion.mapper.OpenQuestionMapper;
+import com.lmash.mysqltest.generator.mapper.OpenquestionMapper;
+import com.lmash.mysqltest.generator.pojo.Openquestion;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,6 +14,9 @@ public class OpenQuestionService {
 
     @Autowired
     OpenQuestionMapper mapper;
+
+    @Autowired
+    OpenquestionMapper mapper2;
 
     public Long saveOpenQuestion(OpenQuestion openQuestion){
         mapper.saveOpenQuestion(openQuestion);
@@ -24,6 +29,11 @@ public class OpenQuestionService {
             return null;
         }
         return openQuestions.get(0);
+    }
+
+    public Openquestion getById(long id){
+        Openquestion openquestion = mapper2.selectByPrimaryKey(id);
+        return openquestion;
     }
 
     public List<OpenQuestion> getByOpenQuestionIds(long[] ids){

@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.jt.openquestion.mapper.OpenQuestionMapper">
+
         <resultMap id="openQuestion" type="com.jt.openquestion.entity.OpenQuestion">
-                <id property="openQuestionId" column="OpenQuestionId" />
-                <!--<result property="questionContent" column="QuestionContent" jdbcType="VARCHAR" javaType="java.lang.String" typeHandler="org.apache.ibatis.type.StringTypeHandler"/>-->
-                <result property="sourceQuestionId" column="SourceQuestionId"/>
+            <result property="openQuestionId" column="OpenQuestionId" />
+            <result property="questionContent" column="QuestionContent" jdbcType="VARCHAR" javaType="java.lang.String"/>
+            <result property="sourceQuestionId" column="SourceQuestionId"/>
             <result property="sourcePlatform" column="SourcePlatform"/>
             <result property="originalQuestionLevel" column="originalQuestionLevel"/>
             <result property="questionLevel" column="questionLevel"/>
@@ -18,16 +19,18 @@
             <result property="createdOn" column="createdOn"/>
             <result property="modifiedOn" column="modifiedOn"/>
             <result property="labelUseType" column="labelUseType"/>
-                <association property="openQuestionExtension" resultMap="openQuestionExtension" columnPrefix="x_" />
-                <collection property="openQuestionLabels" ofType="com.jt.openquestion.entity.OpenQuestionLabel"
-                            resultMap="openQuestionLabel" columnPrefix="l_" />
+            <!--<association property="openQuestionExtension" resultMap="openQuestionExtension" columnPrefix="x_" />-->
+            <!--<collection property="openQuestionLabels" ofType="com.jt.openquestion.entity.OpenQuestionLabel" javaType="List"-->
+                        <!--resultMap="openQuestionLabel" columnPrefix="l_" />-->
+            <collection property="openQuestionLabels" ofType="com.jt.openquestion.entity.OpenQuestionLabel" javaType="List"
+                resultMap="openQuestionLabel"  columnPrefix="l_" />
         </resultMap>
 
         <resultMap id="openQuestionLabel" type="com.jt.openquestion.entity.OpenQuestionLabel">
-                <id property="openQuestionId" column="OpenQuestionId" />
-                <id property="labelId" column="LabelId" />
-                <id property="labelType" column="LabelType" />
-                <result property="labelScore" column="LabelScore" />
+            <id property="openQuestionId" column="OpenQuestionId"/>
+            <id property="labelId" column="LabelId"/>
+            <id property="labelType" column="LabelType"/>
+            <result property="labelScore" column="LabelScore"/>
         </resultMap>
 
         <resultMap id="openQuestionExtension" type="com.jt.openquestion.entity.OpenQuestionExtension">
@@ -43,7 +46,7 @@
             op.`OpenQuestionId`,
             op.`SourceQuestionId`,
             op.`SourcePlatform`,
-            op.QuestionContent,
+            op.`QuestionContent`,
             op.`OriginalQuestionLevel`,
             op.`CourseId`,
             op.`OriginalKnowledgePointLabels`,
@@ -74,7 +77,7 @@
         LEFT JOIN `openquestionreference` AS opr ON op.OpenQuestionId = opr.OpenQuestionId
         LEFT JOIN  `OpenQuestionLabel` AS ol on op.OpenQuestionId = ol.OpenQuestionId
         LEFT JOIN  `OpenQuestionExtension` as x on op.OpenQuestionId = x.OpenQuestionId
-        WHERE op.OpenQuestionId in 
+        WHERE op.OpenQuestionId in
         <foreach collection="array" item="id" index="index" open="(" close=")" separator=",">
                 ${id}
         </foreach>

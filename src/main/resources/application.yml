@@ -26,6 +26,4 @@ server:
 # Show sql log
 logging:
   level:
-     com:
-       jt:
-         mapper: debug
+     com.jt.mapper: debug
