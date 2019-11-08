@@ -33,7 +33,7 @@ public enum TikuPlatformEnum {
         return this.value;
     }
 
-    public static TikuPlatformEnum getTikuPlatform(int platformType){
+    public static TikuPlatformEnum parse(int platformType){
         TikuPlatformEnum[] values =  TikuPlatformEnum.values();
         for (TikuPlatformEnum value : values){
             if(value.getValue().equals(platformType)){

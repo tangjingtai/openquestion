@@ -168,7 +168,7 @@ public class OpenQuestion {
 
     public int fetchCalculateQuestionLevel()
     {
-        TikuPlatformEnum platformEnum = TikuPlatformEnum.getTikuPlatform(this.sourcePlatform);
+        TikuPlatformEnum platformEnum = TikuPlatformEnum.parse(this.sourcePlatform);
             switch (platformEnum)
             {
                 case Motk:

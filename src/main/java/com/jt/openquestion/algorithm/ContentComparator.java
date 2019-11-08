@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class ContentComparator {
-    
+
     /**
      * 与另外一道题目比较，获得两道题目的相似度；
      * 比较过程将两道题目掉转位置后再比对一次；

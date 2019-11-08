@@ -1,30 +1,51 @@
 package com.jt.openquestion.algorithm;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jt.openquestion.entity.*;
 import com.jt.openquestion.enums.OpenQuestionLabelTypeEnum;
 import com.jt.openquestion.enums.TikuPlatformEnum;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import com.jt.openquestion.mapper.KnowledgePointMapper;
 import com.jt.openquestion.utils.CastArrayUtil;
 import com.jt.openquestion.utils.CollectionExtension;
 import com.jt.openquestion.utils.StringExtensions;
 import com.jt.openquestion.utils.Tuple;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class OpenQuestionLabelCredibilityAlgorithm {
+    private KnowledgePointMapper knowledgePointMapper;
+    private SystemConfig systemConfig;
+
+    @Autowired
+    public OpenQuestionLabelCredibilityAlgorithm(KnowledgePointMapper knowledgePointMapper, SystemConfig systemConfig){
+        this.knowledgePointMapper = knowledgePointMapper;
+        this.systemConfig = systemConfig;
+    }
 
     /**
      * 第三方题库题目标签权重配置
      */
     private static List<TikuPlatformWeightConfig> platformLabelWeightConfig;
 
+    /**
+     * 锁对象
+     */
+    private final static Object lock = new Object();
+
+    /**
+     * 平台默认权重值
+     */
     private final Double PLATFORM_BASE_WEIGHT = 0.5;
 
     /**
      * 次要知识点相对主要知识点的权重因子，对次要知识点进行降权
      */
     private final Double SECONDARY_KNOWLEDGEPOINT_WEIGHT_FACTOR = 0.65;
-
-    private final static Object lock = new Object();
 
     /**
      * 来源题库平台的知识点与MOTK知识点对应关系
@@ -190,9 +211,7 @@ public class OpenQuestionLabelCredibilityAlgorithm {
     private List<Integer> getKnowledgePointParentChain(int knowledgeId) {
         ArrayList<Integer> result = new ArrayList<>();
         if (motkKnowledgePoints == null) {
-            // TODO: 从数据库中查询魔题库知识点列表
-//            motkKnowledgePoints = _knowledgePointDal.GetMotkKnowledgePoints();
-            motkKnowledgePoints = new ArrayList<>();
+            motkKnowledgePoints = this.knowledgePointMapper.getKnowledgePoints();
         }
         Optional<KnowledgePoint> knowledge = CollectionExtension.firstOrDefault(motkKnowledgePoints, x -> x.getKnowledgePointId() == knowledgeId);
         if (!knowledge.isPresent() || knowledge.get().getParentKnowledgePointId() == 0) {
@@ -315,9 +334,7 @@ public class OpenQuestionLabelCredibilityAlgorithm {
         if (!sourcePlatformKnowledgePointRelations.containsKey(sourcePlatform)) {
             synchronized (lock) {
                 if (!sourcePlatformKnowledgePointRelations.containsKey(sourcePlatform)) {
-                    // var knowledgePoints = _knowledgePointDal.GetThirdPartyKnowledgePointByPlatform(sourcePlatform);
-                    ArrayList<ThirdPartyKnowledgePoint> knowledgePoints = null;
-                    // TODO: 从数据库中读取第三方知识点
+                    List<ThirdPartyKnowledgePoint> knowledgePoints = this.knowledgePointMapper.getThirdPartyKnowledgePoints(sourcePlatform);
                     if (knowledgePoints != null) {
                         knowledgePoints.sort(Comparator.comparingInt(ThirdPartyKnowledgePoint::getStatusFlag));
                         HashMap<ThirdPartyKnowledgePointIdTuple, Integer> map = new HashMap<>(knowledgePoints.size());
@@ -365,17 +382,31 @@ public class OpenQuestionLabelCredibilityAlgorithm {
     }
 
     private void buildSourcePlatformLabelWeight() {
-        platformLabelWeightConfig = new ArrayList<>(2);
-        TikuPlatformWeightConfig tikuPlatformWeightConfig = new TikuPlatformWeightConfig();
-        tikuPlatformWeightConfig.setPlatform(TikuPlatformEnum.XueKe);
-        tikuPlatformWeightConfig.setPlatformWeight(0.88);
-        HashMap<Integer, Double> map = new HashMap<Integer, Double>() {
-            {
-                put(1, 0.75);
-                put(2, 0.80);
+        if(platformLabelWeightConfig == null){
+            synchronized (lock){
+                if(platformLabelWeightConfig == null){
+                    String weightConfigStr  = this.systemConfig.getThirdPartyPlatformLabelWeight();
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    try {
+                        platformLabelWeightConfig = objectMapper.readValue(weightConfigStr, new TypeReference<List<TikuPlatformWeightConfig>>() {
+                        });
+                    } catch (JsonProcessingException e) {
+                        throw new RuntimeException("解析平台的权重配置出错", e);
+                    }
+                }
             }
-        };
-        tikuPlatformWeightConfig.setCoursePlatformWeights(map);
+        }
+//        platformLabelWeightConfig = new ArrayList<>(2);
+//        TikuPlatformWeightConfig tikuPlatformWeightConfig = new TikuPlatformWeightConfig();
+//        tikuPlatformWeightConfig.setPlatform(TikuPlatformEnum.XueKe);
+//        tikuPlatformWeightConfig.setPlatformWeight(0.88);
+//        HashMap<Integer, Double> map = new HashMap<Integer, Double>() {
+//            {
+//                put(1, 0.75);
+//                put(2, 0.80);
+//            }
+//        };
+//        tikuPlatformWeightConfig.setCoursePlatformWeights(map);
     }
 
     public double getPlatformCourseWeight(int platform, int courseId) {
