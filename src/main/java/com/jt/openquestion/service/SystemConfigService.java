@@ -21,19 +21,36 @@ public class SystemConfigService {
     }
 
     public SystemConfig getSystemConfig(){
-        List<SystemConfigRaw> systemConfig = this.configMapper.getSystemConfig();
+        List<SystemConfigRaw> systemConfigRaws = this.configMapper.getSystemConfig();
         SystemConfig config = new SystemConfig();
-        if(systemConfig == null || systemConfig.size() == 0){
+        if(systemConfigRaws == null || systemConfigRaws.size() == 0){
             return config;
         }
         for(Field f : config.getClass().getDeclaredFields()){
             String fieldName = f.getName();
-            Optional<SystemConfigRaw> systemConfigRaw = CollectionExtension.firstOrDefault(systemConfig, x -> x.getConfigName().equalsIgnoreCase(fieldName));
+            Optional<SystemConfigRaw> systemConfigRaw = CollectionExtension.firstOrDefault(systemConfigRaws, x -> x.getConfigName().equalsIgnoreCase(fieldName));
             if(systemConfigRaw.isPresent()){
                 f.setAccessible(true);
+                Class<?> fieldType = f.getType();
                 try {
-                    f.set(systemConfig, systemConfigRaw.get().getConfigValue());
-                } catch (IllegalAccessException ignored) {
+                    String val = systemConfigRaw.get().getConfigValue();
+                    if(fieldType.equals(String.class)){
+                        f.set(config, val);
+                    }
+                    if(fieldType.equals(Integer.class)){
+                        f.set(config, Integer.parseInt(val));
+                    }
+                    if(fieldType.equals(Boolean.class)){
+                        f.set(config, val.equals("1") || val.equalsIgnoreCase("true"));
+                    }
+                    if(fieldType.equals(Double.class)){
+                        f.set(config, Double.parseDouble(val));
+                    }
+                    if(fieldType.equals(Float.class)){
+                        f.set(config, Float.parseFloat(val));
+                    }
+                } catch (IllegalAccessException | IllegalArgumentException e) {
+                    e.printStackTrace();
                 }
             }
         }

@@ -61,6 +61,37 @@
 			<artifactId>ansj_seg</artifactId>
 			<version>5.1.1</version>
 		</dependency>
+		<!--<dependency>-->
+			<!--<groupId>org.elasticsearch.client</groupId>-->
+			<!--<artifactId>transport</artifactId>-->
+			<!--<version>7.1.1</version>-->
+		<!--</dependency>-->
+		<dependency>
+			<groupId>org.elasticsearch</groupId>
+			<artifactId>elasticsearch</artifactId>
+			<version>7.1.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.elasticsearch.client</groupId>
+			<artifactId>elasticsearch-rest-client</artifactId>
+			<version>7.1.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.elasticsearch.client</groupId>
+			<artifactId>elasticsearch-rest-high-level-client</artifactId>
+			<version>7.1.1</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>elasticsearch-rest-client</artifactId>
+					<groupId>org.elasticsearch.client</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>elasticsearch</artifactId>
+					<groupId>org.elasticsearch</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
 	</dependencies>
 
 	<build>

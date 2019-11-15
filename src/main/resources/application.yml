@@ -27,3 +27,10 @@ server:
 logging:
   level:
      com.jt.mapper: debug
+
+elasticSearch:
+  host: 218.17.204.22
+  port: 9200
+  client:
+    connectNum: 30
+    connectPerRoute: 50
