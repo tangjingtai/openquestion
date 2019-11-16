@@ -2,13 +2,17 @@ package com.jt.openquestion.algorithm;
 
 import com.jt.openquestion.entity.KeywordRecord;
 import com.jt.openquestion.enums.SimilarityComparisonEnum;
+import org.springframework.stereotype.Component;
 
-import java.security.Key;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * 内容比较器
+ */
+@Component
 public class ContentComparator {
 
     /**
@@ -43,14 +47,14 @@ public class ContentComparator {
      * @return 内容相似度，[0, 1]之间
      */
     private double compareSimilarityPercentage(List<KeywordRecord> keywords, Map<String, KeywordRecord> compareKeywords){
-        double baseWeight = keywords.stream().mapToDouble(KeywordRecord::getWeight).sum();
+        double baseWeight = keywords.stream().mapToDouble(KeywordRecord::fetchWeight).sum();
         double sumWeight = 0.0;
         for(KeywordRecord keyword : keywords){
             if(!compareKeywords.containsKey(keyword.getKeyword())){
                 continue;
             }
             KeywordRecord compare = compareKeywords.get(keyword.getKeyword());
-            double weight = Math.min(keyword.getWeight(), compare.getWeight());
+            double weight = Math.min(keyword.fetchWeight(), compare.fetchWeight());
             sumWeight += weight;
         }
         return sumWeight / baseWeight;

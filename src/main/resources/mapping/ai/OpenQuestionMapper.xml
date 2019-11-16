@@ -22,8 +22,6 @@
             <association property="openQuestionExtension" resultMap="openQuestionExtension" columnPrefix="x_" />
             <!--<collection property="openQuestionLabels" ofType="com.jt.openquestion.entity.OpenQuestionLabel" javaType="List"-->
                         <!--resultMap="openQuestionLabel" columnPrefix="l_" />-->
-            <!--<collection property="openQuestionLabels" ofType="com.jt.openquestion.entity.OpenQuestionLabel" javaType="List"-->
-                <!--resultMap="openQuestionLabel"  columnPrefix="l_" />-->
         </resultMap>
 
         <resultMap id="openQuestionLabel" type="com.jt.openquestion.entity.OpenQuestionLabel">
@@ -64,10 +62,10 @@
             opr.`ReferenceCount`,
             opr.`AnswerCount`,
             opr.`AnswerCorrectRate`,
-            ol.OpenQuestionId as l_OpenQuestionId,
-            ol.LabelId as l_LabelId,
-            ol.LabelType as l_LabelType,
-            ol.LabelScore as l_LabelScore,
+--             ol.OpenQuestionId as l_OpenQuestionId,
+--             ol.LabelId as l_LabelId,
+--             ol.LabelType as l_LabelType,
+--             ol.LabelScore as l_LabelScore,
             x.OpenQuestionId as x_OpenQuestionId,
             x.originalQuestionTypeId as x_OriginalQuestionTypeId,
             x.questionAnalysis as x_QuestionAnalysis,
@@ -75,7 +73,7 @@
             x.questionTypeId as x_QuestionTypeId
         FROM `Openquestion` AS op
         LEFT JOIN `openquestionreference` AS opr ON op.OpenQuestionId = opr.OpenQuestionId
-        LEFT JOIN  `OpenQuestionLabel` AS ol on op.OpenQuestionId = ol.OpenQuestionId
+--         LEFT JOIN  `OpenQuestionLabel` AS ol on op.OpenQuestionId = ol.OpenQuestionId
         LEFT JOIN  `OpenQuestionExtension` as x on op.OpenQuestionId = x.OpenQuestionId
         WHERE op.OpenQuestionId in
         <foreach collection="array" item="id" index="index" open="(" close=")" separator=",">

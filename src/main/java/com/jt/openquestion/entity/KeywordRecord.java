@@ -29,9 +29,13 @@ public class KeywordRecord {
         this.count = count;
     }
 
-    public double getWeight() {
+    /**
+     * 获取关键字的权重
+     * @return 关键字权重
+     */
+    public double fetchWeight() {
         int byteLength = getByteLength(keyword);
-        return byteLength * count * Math.sqrt(Math.log(1 + byteLength * count));
+        return Math.pow(byteLength, 1.3) * Math.sqrt(count);
     }
 
     public void increment() {
@@ -44,7 +48,7 @@ public class KeywordRecord {
      * @param s 字符串
      * @return 字符串的byte长度
      */
-    public static int getByteLength(String s) {
+    private static int getByteLength(String s) {
         int length = 0;
         for (char c : s.toCharArray()) {
             if ((int) c <= 255)

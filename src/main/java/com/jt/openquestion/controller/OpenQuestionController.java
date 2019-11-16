@@ -1,15 +1,14 @@
 package com.jt.openquestion.controller;
 
+import com.jt.openquestion.controller.request.SimilarOpenQuestionRequest;
 import com.jt.openquestion.entity.LiteOpenQuestion;
 import com.jt.openquestion.entity.OpenQuestion;
 import com.jt.openquestion.entity.request.OpenQuestionSearchRequest;
+import com.jt.openquestion.enums.SimilarityComparisonEnum;
 import com.jt.openquestion.service.OpenQuestionSearchService;
 import com.jt.openquestion.service.OpenQuestionService;
-import com.lmash.mysqltest.generator.pojo.Openquestion;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.List;
@@ -18,22 +17,16 @@ import java.util.List;
 public class OpenQuestionController {
 
     @Autowired
-    OpenQuestionService service;
+    OpenQuestionService openQuestionService;
 
     @Autowired
     OpenQuestionSearchService searchService;
 
     @GetMapping("/openquestion/{id}")
     public OpenQuestion openQuestion(@PathVariable("id") Long id){
-        OpenQuestion openQuestion = service.getByOpenQuestionId(id);
+        OpenQuestion openQuestion = openQuestionService.getByOpenQuestionId(id);
         return openQuestion;
     }
-
-//    @GetMapping("/openquestion2/{id}")
-//    public Openquestion openQuestion2(@PathVariable("id") Long id){
-//        Openquestion openQuestion = service.getById(id);
-//        return openQuestion;
-//    }
 
     @GetMapping("/openquestion/search")
     public int search(){
@@ -42,7 +35,7 @@ public class OpenQuestionController {
         request.setCourseId(10);
         request.setSourcePlatforms(new int[]{2,3,4});
         request.setCanKnowledgePointLabel(true);
-//        request.setCanQuestionLevelLabel(true);
+        request.setCanQuestionLevelLabel(true);
         try {
             List<LiteOpenQuestion> liteOpenQuestions = searchService.searchQuestionDetails(request);
             return liteOpenQuestions.size();
@@ -52,4 +45,15 @@ public class OpenQuestionController {
         return 0;
     }
 
+    @PostMapping("/openquestion/similarQuestions")
+    public List<OpenQuestion> similarOpenQuestions(@RequestBody SimilarOpenQuestionRequest request) throws IOException {
+        if(request == null)
+            return null;
+        if (request.getCourseId() == null || request.getCourseId() < 0)
+            return null;
+        if (request.getSimilarScoreThreshold() == null || request.getSimilarScoreThreshold() <= 0.0 || request.getSimilarScoreThreshold() > 1.0)
+            return null;
+        return openQuestionService.getSimilarOpenQuestions(request.getContent(), request.getCourseId(),
+                request.getSimilarScoreThreshold(), SimilarityComparisonEnum.Overall);
+    }
 }

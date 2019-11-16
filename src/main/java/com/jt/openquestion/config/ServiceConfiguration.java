@@ -1,6 +1,7 @@
-package com.jt.openquestion.service;
+package com.jt.openquestion.config;
 
 import com.jt.openquestion.entity.SystemConfig;
+import com.jt.openquestion.service.SystemConfigService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -8,11 +9,8 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class ServiceConfiguration {
 
-    @Autowired
-    SystemConfigService configService;
-
     @Bean
-    public SystemConfig systemConfig(){
+    public SystemConfig systemConfig(@Autowired SystemConfigService configService){
         return configService.getSystemConfig();
     }
 }
