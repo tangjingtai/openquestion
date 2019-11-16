@@ -2,7 +2,6 @@ package com.jt.openquestion.algorithm;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jt.openquestion.entity.*;
 import com.jt.openquestion.enums.OpenQuestionLabelTypeEnum;
@@ -10,7 +9,7 @@ import com.jt.openquestion.enums.TikuPlatformEnum;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import com.jt.openquestion.mapper.KnowledgePointMapper;
+import com.jt.openquestion.mapper.ai.KnowledgePointMapper;
 import com.jt.openquestion.utils.CastArrayUtil;
 import com.jt.openquestion.utils.CollectionExtension;
 import com.jt.openquestion.utils.StringExtensions;

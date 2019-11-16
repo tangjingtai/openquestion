@@ -2,7 +2,7 @@ package com.jt.openquestion.service;
 
 import com.jt.openquestion.entity.SystemConfig;
 import com.jt.openquestion.entity.SystemConfigRaw;
-import com.jt.openquestion.mapper.SystemConfigMapper;
+import com.jt.openquestion.mapper.ai.SystemConfigMapper;
 import com.jt.openquestion.utils.CollectionExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

@@ -1,4 +1,4 @@
-package com.jt.openquestion.mapper;
+package com.jt.openquestion.mapper.ai;
 
 import com.jt.openquestion.entity.KnowledgePoint;
 import com.jt.openquestion.entity.ThirdPartyKnowledgePoint;

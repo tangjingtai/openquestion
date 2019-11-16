@@ -29,11 +29,11 @@ public class OpenQuestionController {
         return openQuestion;
     }
 
-    @GetMapping("/openquestion2/{id}")
-    public Openquestion openQuestion2(@PathVariable("id") Long id){
-        Openquestion openQuestion = service.getById(id);
-        return openQuestion;
-    }
+//    @GetMapping("/openquestion2/{id}")
+//    public Openquestion openQuestion2(@PathVariable("id") Long id){
+//        Openquestion openQuestion = service.getById(id);
+//        return openQuestion;
+//    }
 
     @GetMapping("/openquestion/search")
     public int search(){
