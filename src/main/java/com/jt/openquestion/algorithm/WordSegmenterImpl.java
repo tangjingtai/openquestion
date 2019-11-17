@@ -13,21 +13,29 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
-@Component
 public class WordSegmenterImpl implements WordSegmenter {
-    private static Forest forest;
+//    private static Forest forest;
+//
+//    static {
+//        try {
+//            InputStream in = WordSegmenterImpl.class.getResourceAsStream("library/userLibrary.dic");
+//            forest = Library.makeForest(in);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//    }
 
-    static {
-        try {
-//            org.ansj.library.UserDefineLibrary.insertWord("ansj中文分词", "userDefine", 1000);
-            InputStream in = WordSegmenterImpl.class.getResourceAsStream("/library/userLibrary/userLibrary.dic");
-            forest = Library.makeForest(in);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    private static WordSegmenterImpl wordSegmenter = new WordSegmenterImpl();
+
+    private WordSegmenterImpl(){
+
     }
+
+    public static WordSegmenterImpl build(){
+        return wordSegmenter;
+    }
+
 
     /**
      * 获取文本分词后的结果
@@ -37,7 +45,7 @@ public class WordSegmenterImpl implements WordSegmenter {
      */
     @Override
     public List<KeywordRecord> seg(String text) {
-        Result result = ToAnalysis.parse(text, forest);
+        Result result = ToAnalysis.parse(text);
         Map<String, KeywordRecord> map = new HashMap<>(result.size());
         for(Term term : result.getTerms()){
             String name = term.getName();

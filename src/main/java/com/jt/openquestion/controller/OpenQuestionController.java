@@ -7,6 +7,8 @@ import com.jt.openquestion.entity.request.OpenQuestionSearchRequest;
 import com.jt.openquestion.enums.SimilarityComparisonEnum;
 import com.jt.openquestion.service.OpenQuestionSearchService;
 import com.jt.openquestion.service.OpenQuestionService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,6 +18,7 @@ import java.util.List;
 @RestController
 public class OpenQuestionController {
 
+    Logger logger = LoggerFactory.getLogger(getClass());
     @Autowired
     OpenQuestionService openQuestionService;
 
@@ -47,6 +50,7 @@ public class OpenQuestionController {
 
     @PostMapping("/openquestion/similarQuestions")
     public List<OpenQuestion> similarOpenQuestions(@RequestBody SimilarOpenQuestionRequest request) throws IOException {
+        logger.info("access /openquestion/similarQuestions .....");
         if(request == null)
             return null;
         if (request.getCourseId() == null || request.getCourseId() < 0)
