@@ -1,4 +1,4 @@
-package com.jt.openquestion.utils;
+package com.jt.utils;
 
 import java.util.Collection;
 import java.util.Optional;

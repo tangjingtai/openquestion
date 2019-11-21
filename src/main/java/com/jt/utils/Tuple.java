@@ -1,4 +1,4 @@
-package com.jt.openquestion.utils;
+package com.jt.utils;
 
 public class Tuple {
     public static class Tuple2<A,B>{

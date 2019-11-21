@@ -10,10 +10,10 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import com.jt.openquestion.mapper.ai.KnowledgePointMapper;
-import com.jt.openquestion.utils.CastArrayUtil;
-import com.jt.openquestion.utils.CollectionExtension;
-import com.jt.openquestion.utils.StringExtensions;
-import com.jt.openquestion.utils.Tuple;
+import com.jt.utils.CastArrayUtil;
+import com.jt.utils.CollectionExtension;
+import com.jt.utils.StringExtensions;
+import com.jt.utils.Tuple;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class OpenQuestionLabelCredibilityAlgorithm {

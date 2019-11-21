@@ -1,8 +1,4 @@
-package com.jt.openquestion.utils;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+package com.jt.utils;
 
 public class StringExtensions {
 

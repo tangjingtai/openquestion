@@ -1,4 +1,4 @@
-package com.jt.openquestion.utils;
+package com.jt.utils;
 
 /**
  * 基本类型数组与包装类型数组相互转换的工具类

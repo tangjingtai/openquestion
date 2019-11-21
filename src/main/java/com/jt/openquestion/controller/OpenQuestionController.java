@@ -12,6 +12,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.List;
 
@@ -25,8 +27,15 @@ public class OpenQuestionController {
     @Autowired
     OpenQuestionSearchService searchService;
 
+    @Autowired
+    HttpServletRequest request;
+
     @GetMapping("/openquestion/{id}")
     public OpenQuestion openQuestion(@PathVariable("id") Long id){
+        HttpSession session = this.request.getSession();
+        session = this.request.getSession(true);
+        String sessionId = session.getId();
+        System.out.println("sessionId: "+ sessionId);
         OpenQuestion openQuestion = openQuestionService.getByOpenQuestionId(id);
         return openQuestion;
     }

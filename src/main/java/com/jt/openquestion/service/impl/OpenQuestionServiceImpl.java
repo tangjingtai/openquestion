@@ -1,4 +1,4 @@
-package com.jt.openquestion.service;
+package com.jt.openquestion.service.impl;
 
 import com.jt.openquestion.algorithm.ContentComparator;
 import com.jt.openquestion.algorithm.WordSegmenter;
@@ -8,6 +8,9 @@ import com.jt.openquestion.enums.OpenQuestionUseTypeEnum;
 import com.jt.openquestion.enums.SimilarityComparisonEnum;
 import com.jt.openquestion.mapper.ai.OpenQuestionLabelMapper;
 import com.jt.openquestion.mapper.ai.OpenQuestionMapper;
+import com.jt.openquestion.service.OpenQuestionSearchService;
+import com.jt.openquestion.service.OpenQuestionService;
+import com.jt.utils.RedisUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.io.IOException;
@@ -33,6 +36,8 @@ public class OpenQuestionServiceImpl implements OpenQuestionService {
     private SystemConfig systemConfig;
     @Autowired
     private ContentComparator contentComparator;
+    @Autowired
+    private RedisUtil redisUtil;
 
     private final Object LOCK = new Object();
 
@@ -59,11 +64,20 @@ public class OpenQuestionServiceImpl implements OpenQuestionService {
      * @return 题目对象
      */
     public OpenQuestion getByOpenQuestionId(long openQuestionId) {
+        String key = "OpenQuestion_"+openQuestionId;
+        Object value = redisUtil.get(key);
+        if(value!=null && value instanceof OpenQuestion){
+            return (OpenQuestion)value;
+        }
+
         List<OpenQuestion> openQuestions = getByOpenQuestionIds(new long[]{openQuestionId});
         if (openQuestions == null || openQuestions.size() == 0) {
             return null;
         }
-        return openQuestions.get(0);
+        OpenQuestion openQuestion = openQuestions.get(0);
+        redisUtil.set(key, openQuestion);
+
+        return openQuestion;
     }
 
     /**

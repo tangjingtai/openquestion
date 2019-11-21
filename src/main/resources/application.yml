@@ -14,6 +14,13 @@ mybatis:
 
 spring:
   profiles: dev
+  redis:
+    database: 0
+    host: localhost
+    port: 6379
+    password:
+    timeout: 1000
+
 #  datasource:
 #    username: root
 #    password: 123456

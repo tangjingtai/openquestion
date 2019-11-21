@@ -1,8 +1,9 @@
-package com.jt.openquestion.service;
+package com.jt.openquestion.service.impl;
 
 import com.jt.openquestion.entity.LiteOpenQuestion;
 import com.jt.openquestion.entity.request.OpenQuestionSearchRequest;
 import com.jt.openquestion.enums.OpenQuestionUseTypeEnum;
+import com.jt.openquestion.service.OpenQuestionSearchService;
 import org.elasticsearch.action.admin.indices.alias.get.GetAliasesRequest;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -27,7 +28,7 @@ import java.util.Map;
 import java.util.Set;
 
 @Service
-public class OpenQuestionSearchServiceImpl implements OpenQuestionSearchService{
+public class OpenQuestionSearchServiceImpl implements OpenQuestionSearchService {
 
     @Autowired
     RestHighLevelClient restClient;
