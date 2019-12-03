@@ -1,6 +1,8 @@
 package com.jt.openquestion.entity;
 
-public class KnowledgePoint {
+import java.io.Serializable;
+
+public class KnowledgePoint implements Serializable{
     /**
      *知识点Id
      */

@@ -1,6 +1,10 @@
 package com.jt.openquestion.entity;
 
 public class OpenQuestionLabel {
+    public OpenQuestionLabel(){
+        this(0L,0,0,0.0);
+    }
+
     public OpenQuestionLabel(Long openQuestionId, Integer labelId, Integer labelType, Double labelScore) {
         this.openQuestionId = openQuestionId;
         this.labelId = labelId;

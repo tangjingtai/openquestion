@@ -113,7 +113,7 @@ debug：当此属性设置为true时，将打印出logback内部日志信息，�
     <!-- 指定一个包下的代码使用的日志级别，没有设置addtivity，默认为true，将此loger的打印信息向上级传递到root -->
     <logger name="com.jt.openquestion" level="INFO" />
     <!-- Spring framework logger 不向上传递，啥也不干 -->
-    <logger name="org.springframework" level="debug" additivity="false"></logger>
+    <logger name="org.springframework" level="warn" additivity="true"></logger>
 
     <root level="INFO">
         <appender-ref ref="stdout" />

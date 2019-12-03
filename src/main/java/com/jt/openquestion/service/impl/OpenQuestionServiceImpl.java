@@ -13,6 +13,7 @@ import com.jt.openquestion.service.OpenQuestionService;
 import com.jt.utils.RedisUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,7 +38,7 @@ public class OpenQuestionServiceImpl implements OpenQuestionService {
     @Autowired
     private ContentComparator contentComparator;
     @Autowired
-    private RedisUtil redisUtil;
+    private RedisUtil<OpenQuestion> redisUtil;
 
     private final Object LOCK = new Object();
 
@@ -64,10 +65,10 @@ public class OpenQuestionServiceImpl implements OpenQuestionService {
      * @return 题目对象
      */
     public OpenQuestion getByOpenQuestionId(long openQuestionId) {
-        String key = "OpenQuestion_"+openQuestionId;
-        Object value = redisUtil.get(key);
-        if(value!=null && value instanceof OpenQuestion){
-            return (OpenQuestion)value;
+        String key = "OpenQuestion_" + openQuestionId;
+        OpenQuestion cached = redisUtil.get(key);
+        if (cached != null) {
+            return cached;
         }
 
         List<OpenQuestion> openQuestions = getByOpenQuestionIds(new long[]{openQuestionId});
@@ -75,7 +76,7 @@ public class OpenQuestionServiceImpl implements OpenQuestionService {
             return null;
         }
         OpenQuestion openQuestion = openQuestions.get(0);
-        redisUtil.set(key, openQuestion);
+        redisUtil.set(key, openQuestion, 10 * 60 * 60L);
 
         return openQuestion;
     }
@@ -128,19 +129,19 @@ public class OpenQuestionServiceImpl implements OpenQuestionService {
         }
         searchRequest.setSourcePlatforms(sourcePlatforms.stream().mapToInt(Integer::valueOf).toArray());
         List<LiteOpenQuestion> liteOpenQuestions = this.searchService.searchQuestionDetails(searchRequest);
-        if(liteOpenQuestions == null || liteOpenQuestions.size()==0){
+        if (liteOpenQuestions == null || liteOpenQuestions.size() == 0) {
             return null;
         }
         ArrayList<Long> similarOpenQuestionIds = new ArrayList<>(liteOpenQuestions.size());
         List<KeywordRecord> keywords = wordSegmenter.seg(questionContent);
-        for (LiteOpenQuestion liteOpenQuestion : liteOpenQuestions){
+        for (LiteOpenQuestion liteOpenQuestion : liteOpenQuestions) {
             List<KeywordRecord> compareKeywords = wordSegmenter.seg(liteOpenQuestion.getContent());
             double similarScore = contentComparator.compareSimilarityPercentage(keywords, compareKeywords, similarityComparisonType.getValue());
-            if(similarScore >= similarScoreThreshold){
+            if (similarScore >= similarScoreThreshold) {
                 similarOpenQuestionIds.add(liteOpenQuestion.getOpenQuestionId());
             }
         }
-        if(similarOpenQuestionIds.size() == 0)
+        if (similarOpenQuestionIds.size() == 0)
             return null;
         return getByOpenQuestionIds(similarOpenQuestionIds.stream().mapToLong(Long::valueOf).toArray());
     }

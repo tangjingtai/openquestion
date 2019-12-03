@@ -7,9 +7,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-public final class RedisUtil {
-    @Autowired
-    private RedisTemplate<String, Object> redisTemplate;
+public final class RedisUtil<T> {
+
+    private RedisTemplate<String, T> redisTemplate;
+
+    public RedisUtil(RedisTemplate<String, T> redisTemplate){
+        this.redisTemplate = redisTemplate;
+    }
 
     /**
      * 指定缓存失效时间
@@ -46,7 +50,7 @@ public final class RedisUtil {
      * @param key 键
      * @return 值
      */
-    public Object get(String key){
+    public T get(String key){
         return key == null ? null : redisTemplate.opsForValue().get(key);
     }
 
@@ -55,7 +59,7 @@ public final class RedisUtil {
      * @param key 键
      * @param value 值
      */
-    public void set(String key, Object value){
+    public void set(String key, T value){
         redisTemplate.opsForValue().set(key, value);
     }
 
@@ -65,7 +69,7 @@ public final class RedisUtil {
      * @param value 值
      * @param time 过期时间
      */
-    public void set(String key, Object value, long time){
+    public void set(String key, T value, long time){
         redisTemplate.opsForValue().set(key, value, time);
     }
 
@@ -127,7 +131,7 @@ public final class RedisUtil {
         return redisTemplate.opsForHash().entries(key);
     }
 
-    public void hmset(String key, Map<String, Object> map, long time){
+    public void hmset(String key, Map<String, T> map, long time){
         redisTemplate.opsForHash().putAll(key, map);
         if(time > 0){
             expire(key, time);
@@ -178,7 +182,12 @@ public final class RedisUtil {
         return redisTemplate.opsForHash().increment(key, hashKey, delta);
     }
 
-    public Set<Object> sGet(String key){
+    /**
+     * 获取一个集合
+     * @param key 键
+     * @return 集合
+     */
+    public Set<T> sGet(String key){
         return redisTemplate.opsForSet().members(key);
     }
 
@@ -188,7 +197,7 @@ public final class RedisUtil {
      * @param values 值的集合
      * @return 成功个数
      */
-    public long sSet(String key, Object... values){
+    public long sSet(String key, T... values){
         return redisTemplate.opsForSet().add(key, values);
     }
 }

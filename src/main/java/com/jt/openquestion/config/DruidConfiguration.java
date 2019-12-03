@@ -4,12 +4,14 @@ import com.alibaba.druid.pool.DruidDataSource;
 import com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceAutoConfigure;
 import com.alibaba.druid.support.http.StatViewServlet;
 import com.alibaba.druid.support.http.WebStatFilter;
+import com.jt.openquestion.config.properties.DataSourceProperties;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionFactoryBean;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
@@ -27,26 +29,51 @@ public class DruidConfiguration {
     static final String PACKAGE = "com.jt.openquestion.mapper.ai";
     static final String MAPPER_LOCATION = "classpath:mapping/ai/*Mapper.xml";
 
-    @Value("${ai.datasource.url}")
-    private String url;
+//    @Value("${ai.datasource.url}")
+//    private String url;
+//
+//    @Value("${ai.datasource.username}")
+//    private String user;
+//
+//    @Value("${ai.datasource.password}")
+//    private String password;
+//
+//    @Value("${ai.datasource.driverClassName}")
+//    private String driverClass;
 
-    @Value("${ai.datasource.username}")
-    private String user;
+    @Bean
+    @ConfigurationProperties(prefix = "ai.datasource")
+    public DataSourceProperties aiDataSourceProperties(){
+        return new DataSourceProperties();
+    }
 
-    @Value("${ai.datasource.password}")
-    private String password;
-
-    @Value("${ai.datasource.driverClassName}")
-    private String driverClass;
+    @Bean
+    @ConfigurationProperties(prefix = "oauth2.datasource")
+    public DataSourceProperties oauth2DataSourceProperties(){
+        return new DataSourceProperties();
+    }
 
     @Bean(name = "aiDataSource")
     @Primary
     public DataSource aiDataSource() {
+        DataSourceProperties dataSourceProperties = aiDataSourceProperties();
+
+        return getDataSource(dataSourceProperties);
+    }
+
+    @Bean(name = "oauth2DataSource")
+    public DataSource oauth2DataSource() {
+        DataSourceProperties dataSourceProperties = oauth2DataSourceProperties();
+
+        return getDataSource(dataSourceProperties);
+    }
+
+    private DataSource getDataSource(DataSourceProperties dataSourceProperties) {
         DruidDataSource dataSource = new DruidDataSource();
-        dataSource.setUsername(user);
-        dataSource.setPassword(password);
-        dataSource.setUrl(url);
-        dataSource.setDriverClassName(driverClass);
+        dataSource.setUsername(dataSourceProperties.getUsername());
+        dataSource.setPassword(dataSourceProperties.getPassword());
+        dataSource.setUrl(dataSourceProperties.getUrl());
+        dataSource.setDriverClassName(dataSourceProperties.getDriverClassName());
         return dataSource;
     }
 

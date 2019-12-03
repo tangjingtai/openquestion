@@ -30,8 +30,8 @@ public class ESConfig {
     }
 
     @Bean(initMethod="init",destroyMethod="close")
-    public ESClientSpringFactory getFactory(){
-        return ESClientSpringFactory.
+    public ESClientFactory getFactory(){
+        return ESClientFactory.
                 build(httpHost(), connectNum, connectPerRoute);
     }
 

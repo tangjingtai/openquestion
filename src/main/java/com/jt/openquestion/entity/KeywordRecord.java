@@ -1,6 +1,10 @@
 package com.jt.openquestion.entity;
 
 public class KeywordRecord {
+    public KeywordRecord(){
+        this(null);
+    }
+
     public KeywordRecord(String keyword) {
         this(keyword, 1);
     }

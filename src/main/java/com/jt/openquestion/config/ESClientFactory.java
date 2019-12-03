@@ -7,7 +7,7 @@ import org.elasticsearch.client.RestHighLevelClient;
 
 import java.io.IOException;
 
-public class ESClientSpringFactory {
+public class ESClientFactory {
     public static int CONNECT_TIMEOUT_MILLIS = 1000;
     public static int SOCKET_TIMEOUT_MILLIS = 30000;
     public static int CONNECTION_REQUEST_TIMEOUT_MILLIS = 500;
@@ -19,27 +19,27 @@ public class ESClientSpringFactory {
     private RestClient restClient;
     private RestHighLevelClient restHighLevelClient;
 
-    private static ESClientSpringFactory esClientSpringFactory = new ESClientSpringFactory();
+    private static ESClientFactory esClientFactory = new ESClientFactory();
 
-    private ESClientSpringFactory(){}
+    private ESClientFactory(){}
 
-    public static ESClientSpringFactory build(HttpHost httpHost,
-                                              Integer maxConnectNum, Integer maxConnectPerRoute){
+    public static ESClientFactory build(HttpHost httpHost,
+                                        Integer maxConnectNum, Integer maxConnectPerRoute){
         HTTP_HOST = httpHost;
         MAX_CONN_TOTAL = maxConnectNum;
         MAX_CONN_PER_ROUTE = maxConnectPerRoute;
-        return  esClientSpringFactory;
+        return esClientFactory;
     }
 
-    public static ESClientSpringFactory build(HttpHost httpHost,Integer connectTimeOut, Integer socketTimeOut,
-                                              Integer connectionRequestTime,Integer maxConnectNum, Integer maxConnectPerRoute){
+    public static ESClientFactory build(HttpHost httpHost, Integer connectTimeOut, Integer socketTimeOut,
+                                        Integer connectionRequestTime, Integer maxConnectNum, Integer maxConnectPerRoute){
         HTTP_HOST = httpHost;
         CONNECT_TIMEOUT_MILLIS = connectTimeOut;
         SOCKET_TIMEOUT_MILLIS = socketTimeOut;
         CONNECTION_REQUEST_TIMEOUT_MILLIS = connectionRequestTime;
         MAX_CONN_TOTAL = maxConnectNum;
         MAX_CONN_PER_ROUTE = maxConnectPerRoute;
-        return  esClientSpringFactory;
+        return esClientFactory;
     }
 
 

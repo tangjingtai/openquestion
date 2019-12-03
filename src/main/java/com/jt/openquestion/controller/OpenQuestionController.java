@@ -32,10 +32,10 @@ public class OpenQuestionController {
 
     @GetMapping("/openquestion/{id}")
     public OpenQuestion openQuestion(@PathVariable("id") Long id){
-        HttpSession session = this.request.getSession();
-        session = this.request.getSession(true);
-        String sessionId = session.getId();
-        System.out.println("sessionId: "+ sessionId);
+//        HttpSession session = this.request.getSession();
+//        session = this.request.getSession(true);
+//        String sessionId = session.getId();
+//        System.out.println("sessionId: "+ sessionId);
         OpenQuestion openQuestion = openQuestionService.getByOpenQuestionId(id);
         return openQuestion;
     }
